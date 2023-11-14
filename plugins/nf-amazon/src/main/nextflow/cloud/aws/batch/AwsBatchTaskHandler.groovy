@@ -623,13 +623,15 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
     }
 
     protected List<String> classicSubmitCli() {
+
+
         // the cmd list to launch it
         final opts = getAwsOptions()
-        final cli = opts.getAwsCli()
+        final s3Cli = opts.getS3Cli()
         final debug = opts.debug ? ' --debug' : ''
         final sse = opts.storageEncryption ? " --sse $opts.storageEncryption" : ''
         final kms = opts.storageKmsKeyId ? " --sse-kms-key-id $opts.storageKmsKeyId" : ''
-        final aws = "$cli s3 cp --only-show-errors${sse}${kms}${debug}"
+        final aws = "$s3Cli cp --only-show-errors${sse}${kms}${debug}"
         final cmd = "trap \"{ ret=\$?; $aws ${TaskRun.CMD_LOG} s3:/${getLogFile()}||true; exit \$ret; }\" EXIT; $aws s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
         return ['bash','-o','pipefail','-c', cmd.toString()]
     }

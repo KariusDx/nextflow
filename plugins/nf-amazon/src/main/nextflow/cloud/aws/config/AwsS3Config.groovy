@@ -49,6 +49,10 @@ class AwsS3Config {
 
     private Boolean anonymous
 
+    private String s3AccessKey
+
+    private String s3SecretKey
+
     AwsS3Config(Map opts) {
         this.debug = opts.debug as Boolean
         this.endpoint = opts.endpoint ?: SysEnv.get('AWS_S3_ENDPOINT')
@@ -60,6 +64,8 @@ class AwsS3Config {
         this.pathStyleAccess = opts.s3PathStyleAccess as Boolean
         this.anonymous = opts.anonymous as Boolean
         this.s3Acl = parseS3Acl(opts.s3Acl as String)
+        this.s3AccessKey = opts.s3AccessKey ?: opts.accessKey
+        this.s3SecretKey = opts.s3SecretKey ?: opts.secretKey
     }
 
     private String parseStorageClass(String value) {
@@ -85,6 +91,14 @@ class AwsS3Config {
     // ==== getters =====
     String getEndpoint() {
         return endpoint
+    }
+
+    String getS3AccessKey() {
+        return s3AccessKey
+    }
+
+    String getS3SecretKey() {
+        return s3SecretKey
     }
 
     String getStorageClass() {

@@ -259,13 +259,22 @@ class AwsClientFactory {
 
         final credentials = config.s3Config.anonymous
                 ? new AWSStaticCredentialsProvider(new AnonymousAWSCredentials())
-                : new S3CredentialsProvider(getCredentialsProvider0())
+                : new S3CredentialsProvider(getCredentialsProviderS3())
         builder.withCredentials(credentials)
 
         if( clientConfig )
             builder.withClientConfiguration(clientConfig)
 
         return builder.build()
+    }
+
+    protected AWSCredentialsProvider getCredentialsProviderS3() {
+        if( config.s3Config.s3AccessKey && config.s3Config.s3SecretKey ) {
+            final creds = new BasicAWSCredentials(config.s3Config.s3AccessKey, config.s3Config.s3SecretKey)
+            return new AWSStaticCredentialsProvider(creds)
+        }
+
+        return getCredentialsProvider0()
     }
 
     protected AWSCredentialsProvider getCredentialsProvider0() {

@@ -31,13 +31,13 @@ class S3BashLib extends BashFunLib<S3BashLib> {
     private String storageEncryption = ''
     private String storageKmsKeyId = ''
     private String debug = ''
-    private String cli = 'aws'
+    private String s3Cli = 'aws s3'
     private String retryMode
     private String acl = ''
 
-    S3BashLib withCliPath(String cliPath) {
+    S3BashLib withS3CliPath(String cliPath) {
         if( cliPath )
-            this.cli = cliPath
+            this.s3Cli = cliPath
         return this
     }
 
@@ -93,11 +93,11 @@ class S3BashLib extends BashFunLib<S3BashLib> {
             local name=\$1
             local s3path=\$2
             if [[ "\$name" == - ]]; then
-              $cli s3 cp --only-show-errors ${debug}${acl}${storageEncryption}${storageKmsKeyId}--storage-class $storageClass - "\$s3path"
+              $s3Cli cp --only-show-errors ${debug}${acl}${storageEncryption}${storageKmsKeyId}--storage-class $storageClass - "\$s3path"
             elif [[ -d "\$name" ]]; then
-              $cli s3 cp --only-show-errors --recursive ${debug}${acl}${storageEncryption}${storageKmsKeyId}--storage-class $storageClass "\$name" "\$s3path/\$name"
+              $s3Cli cp --only-show-errors --recursive ${debug}${acl}${storageEncryption}${storageKmsKeyId}--storage-class $storageClass "\$name" "\$s3path/\$name"
             else
-              $cli s3 cp --only-show-errors ${debug}${acl}${storageEncryption}${storageKmsKeyId}--storage-class $storageClass "\$name" "\$s3path/\$name"
+              $s3Cli cp --only-show-errors ${debug}${acl}${storageEncryption}${storageKmsKeyId}--storage-class $storageClass "\$name" "\$s3path/\$name"
             fi
         }
         
@@ -105,11 +105,11 @@ class S3BashLib extends BashFunLib<S3BashLib> {
             local source=\$1
             local target=\$2
             local file_name=\$(basename \$1)
-            local is_dir=\$($cli s3 ls \$source | grep -F "PRE \${file_name}/" -c)
+            local is_dir=\$($s3Cli ls \$source | grep -F "PRE \${file_name}/" -c)
             if [[ \$is_dir == 1 ]]; then
-                $cli s3 cp --only-show-errors --recursive "\$source" "\$target"
+                $s3Cli cp --only-show-errors --recursive "\$source" "\$target"
             else 
-                $cli s3 cp --only-show-errors "\$source" "\$target"
+                $s3Cli cp --only-show-errors "\$source" "\$target"
             fi
         }
         """.stripIndent(true)
@@ -125,7 +125,7 @@ class S3BashLib extends BashFunLib<S3BashLib> {
                 .withMaxParallelTransfers( opts.maxParallelTransfers )
                 .withDelayBetweenAttempts(opts.delayBetweenAttempts )
                 .withMaxTransferAttempts( opts.maxTransferAttempts )
-                .withCliPath( opts.awsCli )
+                .withS3CliPath( opts.s3Cli )
                 .withStorageClass(opts.storageClass )
                 .withStorageEncryption( opts.storageEncryption )
                 .withStorageKmsKeyId( opts.storageKmsKeyId )
