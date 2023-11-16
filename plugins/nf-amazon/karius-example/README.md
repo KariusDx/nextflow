@@ -7,10 +7,14 @@ Install/Upgrade to latest nextflow
 ```bash
    curl -fsSL https://get.nextflow.io | bash
 ```
+
 Download customized nf-amazon plugin
 ```bash
    aws s3 sync s3://misc.kariusdx.com/xfei/nf-amazon-2.1.4 ~/.nextflow/plugins/nf-amazon-2.1.4
 ```
+
+Create a nextflow config file similar as the one in the example, and update with lakeFS access key and secrets (get from lasspass or ask Xubo)
+ 
 
 ## Examples
 
