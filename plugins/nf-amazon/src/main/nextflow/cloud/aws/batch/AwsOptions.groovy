@@ -140,14 +140,28 @@ class AwsOptions implements CloudTransferOptions {
         return result
     }
 
+    String getDefaultS3Cli() {
+        return "${getAwsCli()} s3"
+    }
+
     String getS3Cli() {
         def cli = getAwsCli()
         def result = "AWS_ACCESS_KEY_ID=${awsConfig.s3Config.s3AccessKey} AWS_SECRET_ACCESS_KEY=${awsConfig.s3Config.s3SecretKey} $cli s3 --endpoint ${awsConfig.s3Config.endpoint}"
         return result
     }
 
+    String getS3AccessKey() {
+        return awsConfig.s3Config.s3AccessKey
+    }
+
+    String getS3SecretKey() {
+        return awsConfig.s3Config.s3SecretKey
+    }
+
+
     AwsOptions addVolume(Path path) {
         awsConfig.batchConfig.addVolume(path)
         return this
     }
+
 }

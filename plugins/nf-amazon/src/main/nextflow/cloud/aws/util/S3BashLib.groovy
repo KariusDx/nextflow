@@ -31,13 +31,20 @@ class S3BashLib extends BashFunLib<S3BashLib> {
     private String storageEncryption = ''
     private String storageKmsKeyId = ''
     private String debug = ''
-    private String s3Cli = 'aws s3'
+    private String s3Cli
+    private String defaultS3Cli
     private String retryMode
     private String acl = ''
 
     S3BashLib withS3CliPath(String cliPath) {
         if( cliPath )
             this.s3Cli = cliPath
+        return this
+    }
+
+    S3BashLib withDefaultS3Cli(String defaultS3Cli) {
+        if( defaultS3Cli )
+            this.defaultS3Cli = defaultS3Cli
         return this
     }
 
@@ -105,15 +112,35 @@ class S3BashLib extends BashFunLib<S3BashLib> {
             local source=\$1
             local target=\$2
             local file_name=\$(basename \$1)
-            local is_dir=\$($s3Cli ls \$source | grep -F "PRE \${file_name}/" -c)
-            if [[ \$is_dir == 1 ]]; then
-                $s3Cli cp --only-show-errors --recursive "\$source" "\$target"
-            else 
-                $s3Cli cp --only-show-errors "\$source" "\$target"
-            fi
+            
+            predefined_prefixes=("s3://results." "s3://seqruns-" "s3://reads." "s3://references.")
+            found=false
+            for prefix in "\${predefined_prefixes[@]}"; do
+                if [[ \$source == \$prefix* ]]; then
+                    found=true
+                    break
+                fi
+            done
+            
+            if [ "\$found" = true ]; then
+                local is_dir=\$($defaultS3Cli ls \$source | grep -F "PRE \${file_name}/" -c)
+                if [[ \$is_dir == 1 ]]; then
+                    $defaultS3Cli cp --only-show-errors --recursive "\$source" "\$target"
+                else 
+                    $defaultS3Cli cp --only-show-errors "\$source" "\$target"
+                fi
+            else
+                local is_dir=\$($s3Cli ls \$source | grep -F "PRE \${file_name}/" -c)
+                if [[ \$is_dir == 1 ]]; then
+                    $s3Cli cp --only-show-errors --recursive "\$source" "\$target"
+                else 
+                    $s3Cli cp --only-show-errors "\$source" "\$target"
+                fi    
+            fi 
         }
         """.stripIndent(true)
     }
+
 
     String render() {
         super.render() + retryEnv() + s3Lib()
@@ -126,6 +153,7 @@ class S3BashLib extends BashFunLib<S3BashLib> {
                 .withDelayBetweenAttempts(opts.delayBetweenAttempts )
                 .withMaxTransferAttempts( opts.maxTransferAttempts )
                 .withS3CliPath( opts.s3Cli )
+                .withDefaultS3Cli( opts.defaultS3Cli )
                 .withStorageClass(opts.storageClass )
                 .withStorageEncryption( opts.storageEncryption )
                 .withStorageKmsKeyId( opts.storageKmsKeyId )
